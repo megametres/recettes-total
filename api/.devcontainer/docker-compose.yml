@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  rust:
+    build:
+      context: .
+    container_name: "recipes_rust_dev"
+    command: tail -f /dev/null
+    volumes:
+      - ../:/home/api
+    working_dir: /home/api
+    labels:
+      - "traefik.http.routers.recipes_rust.rule=Host(`api.recettes`)"
+      - "traefik.http.services.recipes_rust.loadbalancer.server.port=80"
+  postgres:
+    image: postgres
+    container_name: "recipes_postgres_dev"
+    environment:
+      POSTGRES_PASSWORD: nbFQm5ge4NHjeXLngGPt4B3WRiUbKTNTboFvbvHqLQCDCz6q
+      POSTGRES_USER: recipe_admin
+      POSTGRES_DB: recipe
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data/
+      - ../../postgresql/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - 5432:5432
+    labels:
+      - "traefik.http.routers.recipes_postgres.rule=Host(`postgres.recettes`)"
+
+  adminer:
+    container_name: "recipes_adminer_dev"
+    image: adminer
+    labels:
+      - "traefik.http.routers.recipes_adminer.rule=Host(`adminer.recettes`)"
+      - "traefik.http.services.recipes_adminer.loadbalancer.server.port=8080"
+
+  portainer:
+    image: portainer/portainer
+    container_name: "recipes_portainer_dev"
+    command: --no-auth -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.http.routers.recipes_portainer.rule=Host(`portainer.recettes`)"
+
+  traefik:
+    image: traefik:latest
+    container_name: "recipes_traefik_dev"
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.http.routers.recipes_traefik.rule=Host(`traefik.recettes`)"
+      - "traefik.http.services.recipes_traefik.loadbalancer.server.port=8080"
+
+volumes:
+  postgres_data_dev:
