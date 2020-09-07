@@ -21,7 +21,7 @@ services:
       POSTGRES_DB: recipe
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - "./postgresql/postgresql.conf:/etc/postgresql/postgresql.conf"
+      - "./api/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf"
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     ports:
       - 5432:5432
