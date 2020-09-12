@@ -21,8 +21,19 @@ services:
       POSTGRES_DB: recipe
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - "./api/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf"
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+      - ./api/postgresql/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    command:
+      - "postgres"
+      - "-c"
+      - "logging_collector=on"
+      - "-c"
+      - "log_directory='log'"
+      - "-c"
+      - "log_filename='postgresql-%Y-%m-%d_%H%M%S.log'"
+      - "-c"
+      - "log_rotation_age=100d"
+      - "-c"
+      - "log_rotation_size=100MB"
     ports:
       - 5432:5432
     labels:
