@@ -1,0 +1,26 @@
+FROM rustlang/rust:nightly-alpine AS builder
+
+RUN apk add pkgconfig openssl-dev musl-dev postgresql-dev
+
+WORKDIR /root
+COPY api /root
+
+RUN cargo build --release
+
+FROM alpine
+
+ARG USERNAME=rust
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN addgroup --gid $USER_GID $USERNAME && adduser --uid $USER_UID --ingroup "$USERNAME" --no-create-home --disabled-password $USERNAME
+RUN mkdir /app
+
+WORKDIR /app
+COPY --from=builder /root/target/release/recipes_api /app/
+
+RUN chown -R $USERNAME:$USERNAME /app
+
+USER $USERNAME
+EXPOSE 8000
+
+CMD ["/app/recipes_api"]

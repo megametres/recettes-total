@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  rust:
+    environment:
+      - ROCKET_SECRET_KEY=${ROCKET_SECRET_KEY}
+    labels:
+      - "traefik.http.routers.${PROJECT_NAME}_rust.rule=Host(`api.${PROJECT_BASE_URL}`)"
+  postgres:
+    labels:
+      - "traefik.http.routers.${PROJECT_NAME}_postgres.rule=Host(`postgres.${PROJECT_BASE_URL}`)"
+  traefik:
+    labels:
+      - "traefik.http.routers.${PROJECT_NAME}_traefik.rule=Host(`traefik.${PROJECT_BASE_URL}`)"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.${PROJECT_NAME}_traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=megametres:$$2y$$05$$j/NZpVKwzUzwOiSlK/SjHOEw7zKCufZqRENwSIUjOwwccB3m4ntHC"

@@ -1,0 +1,8 @@
+.devcontainer
+.vscode
+target
+.gitignore
+Cargo.lock
+docker-compose.yml
+Dockerfile-rust
+README.md
