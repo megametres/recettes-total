@@ -46,7 +46,7 @@ ps:
 
 ## shell	:	Access `ruby` container via shell.
 shell:
-	docker exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_ruby' --format "{{ .ID }}") /bin/bash
+	docker exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_rust' --format "{{ .ID }}") /bin/bash
 
 ## logs	:	View containers logs.
 ##		You can optinally pass an argument with the service name to limit logs
