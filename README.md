@@ -7,3 +7,5 @@ For now the recipe api is created with rust + diesel + postgresql + rocket
 The front-end is with angular
 
 This repo is only used for regroup, deployment and management of all part of the application.
+
+Dont forget to rename the .env.example to .env and to set your variables there
