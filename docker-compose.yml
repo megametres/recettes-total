@@ -6,7 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile-rust
     container_name: "${PROJECT_NAME}_rust"
-    command: tail -f /dev/null
     ports:
       - 8000:8000
     environment:
