@@ -8,4 +8,4 @@ The front-end is with angular
 
 This repo is only used for regroup, deployment and management of all part of the application.
 
-Dont forget to rename the .env.example to .env and to set your variables there
+Dont forget to rename the .env.example to .env and to set your variables there and to edit your /etc/hosts file accordingly
