@@ -2,16 +2,57 @@ version: "3"
 
 services:
   rust:
+    image: "${PROJECT_NAME}_rust_armv7:${API_VERSION}"
+    container_name: "${PROJECT_NAME}_rust_armv7"
+    ports:
+      - 8000:8000
     environment:
-      - ROCKET_SECRET_KEY=${ROCKET_SECRET_KEY}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
+      ROCKET_SECRET_KEY: ${ROCKET_SECRET_KEY}
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_rust.rule=Host(`api.${PROJECT_BASE_URL}`)"
+      - "traefik.http.services.${PROJECT_NAME}_rust.loadbalancer.server.port=8000"
   postgres:
+    image: postgres:alpine
+    container_name: "${PROJECT_NAME}_postgres"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./api/postgresql-init/:/docker-entrypoint-initdb.d/
+    command:
+      - "postgres"
+      - "-c"
+      - "logging_collector=on"
+      - "-c"
+      - "log_directory='log'"
+      - "-c"
+      - "log_filename='postgresql-%Y-%m-%d_%H%M%S.log'"
+      - "-c"
+      - "log_rotation_age=100d"
+      - "-c"
+      - "log_rotation_size=100MB"
+    ports:
+      - 5432:5432
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_postgres.rule=Host(`postgres.${PROJECT_BASE_URL}`)"
+
   traefik:
+    image: traefik:latest
+    container_name: "${PROJECT_NAME}_traefik"
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_traefik.rule=Host(`traefik.${PROJECT_BASE_URL}`)"
+      - "traefik.http.services.${PROJECT_NAME}_traefik.loadbalancer.server.port=8080"
       - "traefik.http.routers.api.service=api@internal"
       - "traefik.http.routers.${PROJECT_NAME}_traefik.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=megametres:$$2y$$05$$j/NZpVKwzUzwOiSlK/SjHOEw7zKCufZqRENwSIUjOwwccB3m4ntHC"
+
+volumes:
+  postgres_data:

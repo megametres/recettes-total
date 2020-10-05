@@ -1,0 +1,12 @@
+##
+## Compile api
+##
+FROM rustlang/rust:nightly-buster
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CROSS_DOCKER_IN_DOCKER=true
+
+RUN apt-get update && apt-get install -y docker.io libpq5 libpq-dev
+RUN cargo install cross
+
+WORKDIR /code

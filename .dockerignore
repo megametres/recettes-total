@@ -1,8 +1,13 @@
 .devcontainer
 .vscode
-target
+api/target
+.env.example
 .gitignore
+.gitmodules
 Cargo.lock
+docker
 docker-compose.yml
-Dockerfile-rust
+docker-compose-production.yml
+LICENSE
+Makefile
 README.md

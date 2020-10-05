@@ -4,7 +4,10 @@ services:
   rust:
     build:
       context: .
-      dockerfile: Dockerfile-rust
+      dockerfile: docker/Dockerfile-rust
+      args:
+        - ARCH=${TARGET_ARCH}/
+    image: "${PROJECT_NAME}_rust:${API_VERSION}"
     container_name: "${PROJECT_NAME}_rust"
     ports:
       - 8000:8000
@@ -23,7 +26,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - ./api/postgresql/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+      - ./api/postgresql-init/:/docker-entrypoint-initdb.d/
     command:
       - "postgres"
       - "-c"

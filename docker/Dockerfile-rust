@@ -1,0 +1,48 @@
+##
+## Compile api
+##
+FROM rustlang/rust:nightly-buster AS builder
+
+# Avoid warnings by switching to noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && apt install -y postgresql-server-dev-all musl-dev gdb
+
+WORKDIR /root
+COPY api /root
+
+RUN cargo build --release
+
+##
+## Build running image
+##
+FROM debian:buster-slim
+
+# Avoid warnings by switching to noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y postgresql-client openssl
+
+## Clean up
+RUN apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set user info
+ARG USERNAME=rust
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && usermod -a -G staff $USERNAME
+
+RUN mkdir /app
+WORKDIR /app
+COPY --from=builder /root/target/release/recipes_api /app/
+RUN chown -R $USERNAME:$USERNAME /app
+USER $USERNAME
+
+EXPOSE 8000
+
+CMD ["/app/recipes_api"]
