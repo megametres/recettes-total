@@ -6,58 +6,24 @@ cargo_version:=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"`
 
 default: up
 
-## help	:	Print commands help.
-help : Makefile
-	@sed -n 's/^##//p' $<
 
-## up	:	Start up containers.
-up:
-ifeq ($(DEPLOYMENT_ENVIRONMENT), Production)
-	@echo -n "\e[31mAre you sure that you want to deploy on the production environment? (Y/N)\e[0m "
-	@read confirmation; \
-	if [ $$confirmation = "y" ] || [ $$confirmation = "Y" ]; \
-	then \
-		echo "Starting up containers for $(PROJECT_NAME) in the $(DEPLOYMENT_ENVIRONMENT) environment\n"\
-		`docker-compose -f docker-compose-production.yml up -d`; \
-	else \
-		echo "Operation aborted."; \
-	fi
-else
-	@echo "Starting up containers for $(PROJECT_NAME) in the $(DEPLOYMENT_ENVIRONMENT) environment"
-	docker-compose up -d --remove-orphans
-endif
-
-## build	:	Build ruby image.
+## build	:	Build the docker images.
 build:
 	@echo "Building ruby image for for $(PROJECT_NAME)..."
 	docker-compose pull
 	docker-compose build
 
-## d	:	Shortcut for docker
+## d	:	Shortcut for docker that will map on the selected environment
 d:
 	@docker $(filter-out $@,$(MAKECMDGOALS))
 
-## dc	:	Shortcut for docker-compose
+## dc	:	Shortcut for docker-compose that will map on the selected environment
 dc:
 	@docker-compose $(filter-out $@,$(MAKECMDGOALS))
 
-## stop	:	Stop containers.
-stop:
-	@echo "Stopping containers for $(PROJECT_NAME)..."
-	docker-compose stop
-
-## prune	:	Remove containers and their volumes.
-prune:
-	@echo "Removing containers for $(PROJECT_NAME)..."
-	docker-compose down -v
-
-## ps	:	List running containers.
-ps:
-	docker ps --filter name='$(PROJECT_NAME)*'
-
-## shell	:	Access `ruby` container via shell.
-shell:
-	docker exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_rust' --format "{{ .ID }}") /bin/bash
+## help	:	Print commands help.
+help : Makefile
+	@sed -n 's/^##//p' $<
 
 ## logs	:	View containers logs.
 ##		You can optinally pass an argument with the service name to limit logs
@@ -86,6 +52,41 @@ else
 	@echo "Uncommenting the DOCKER_ variables in the .env file"
 	@sed -i 's/^#DOCKER_/DOCKER_/g' .env
 	@sed -i 's/^DEPLOYMENT_ENVIRONMENT=Local/DEPLOYMENT_ENVIRONMENT=Production/g' .env
+endif
+
+## prune	:	Remove containers and their volumes.
+prune:
+	@echo "Removing containers for $(PROJECT_NAME)..."
+	docker-compose down -v
+
+## ps	:	List running containers.
+ps:
+	docker ps --filter name='$(PROJECT_NAME)*'
+
+## shell	:	Access `ruby` container via shell.
+shell:
+	docker exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_rust' --format "{{ .ID }}") /bin/bash
+
+## stop	:	Stop containers.
+stop:
+	@echo "Stopping containers for $(PROJECT_NAME)..."
+	docker-compose stop
+
+## up	:	Start up containers.
+up:
+ifeq ($(DEPLOYMENT_ENVIRONMENT), Production)
+	@echo -n "\e[31mAre you sure that you want to deploy on the production environment? (Y/N)\e[0m "
+	@read confirmation; \
+	if [ $$confirmation = "y" ] || [ $$confirmation = "Y" ]; \
+	then \
+		echo "Starting up containers for $(PROJECT_NAME) in the $(DEPLOYMENT_ENVIRONMENT) environment\n"\
+		`docker-compose -f docker-compose-production.yml up -d`; \
+	else \
+		echo "Operation aborted."; \
+	fi
+else
+	@echo "Starting up containers for $(PROJECT_NAME) in the $(DEPLOYMENT_ENVIRONMENT) environment"
+	docker-compose up -d --remove-orphans
 endif
 
 version:
