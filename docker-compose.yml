@@ -14,10 +14,8 @@ services:
       - "traefik.http.services.${PROJECT_NAME}_angular.loadbalancer.server.port=80"
   rust:
     build:
-      context: .
-      dockerfile: docker/Dockerfile-rust
-      args:
-        - ARCH=${TARGET_ARCH}/
+      context: api
+      dockerfile: ../docker/Dockerfile-rust
     image: "${PROJECT_NAME}_rust:${API_VERSION}"
     container_name: "${PROJECT_NAME}_rust"
     ports:
@@ -25,6 +23,7 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
       ROCKET_SECRET_KEY: ${ROCKET_SECRET_KEY}
+      API_URL: http://${PROJECT_DEV_URL}
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_rust.rule=Host(`api.${PROJECT_DEV_URL}`)"
       - "traefik.http.services.${PROJECT_NAME}_rust.loadbalancer.server.port=8000"
@@ -54,6 +53,22 @@ services:
       - 5432:5432
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_postgres.rule=Host(`postgres.${PROJECT_DEV_URL}`)"
+
+  adminer:
+    container_name: "recipes_adminer"
+    image: adminer
+    labels:
+      - "traefik.http.routers.recipes_adminer.rule=Host(`adminer.recettes`)"
+      - "traefik.http.services.recipes_adminer.loadbalancer.server.port=8080"
+
+  portainer:
+    image: portainer/portainer
+    container_name: "recipes_portainer"
+    command: --no-auth -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.http.routers.recipes_portainer.rule=Host(`portainer.recettes`)"
 
   traefik:
     image: traefik:latest

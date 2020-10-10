@@ -8,8 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && apt install -y postgresql-server-dev-all musl-dev gdb
 
-WORKDIR /root
-COPY api /root
+WORKDIR /app
+COPY . /app
 
 RUN cargo build --release
 
@@ -39,7 +39,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /root/target/release/recipes_api /app/
+COPY --from=builder /app/target/release/recipes_api /app/
 RUN chown -R $USERNAME:$USERNAME /app
 USER $USERNAME
 
