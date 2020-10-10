@@ -5,22 +5,22 @@ include .env
 version_in_cargo:=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"`
 version_in_package:=`sed '3q;d' frontend/package.json | awk '{print $$2}' | tr -d \",`
 
+ifeq ($(DOCKER_TLS_VERIFY), 1)
+	docker_command:=@docker --tlsverify --tlscacert=$(DOCKER_CERT_PATH)ca.pem --tlscert=$(DOCKER_CERT_PATH)cert.pem --tlskey=$(DOCKER_CERT_PATH)key.pem -H=$(DOCKER_HOST)
+	docker_compose_command:=docker-compose --tlsverify --tlscacert=$(DOCKER_CERT_PATH)ca.pem --tlscert=$(DOCKER_CERT_PATH)cert.pem --tlskey=$(DOCKER_CERT_PATH)key.pem -H=$(DOCKER_HOST)
+else
+	docker_command:=@docker
+	docker_compose_command:=docker-compose
+endif
+
 default: up
 
 
 ## build	:	Build the docker images.
 build:
 	@echo "Building ruby image for for $(PROJECT_NAME)..."
-	docker-compose pull
-	docker-compose build
-
-## d	:	Shortcut for docker that will map on the selected environment
-d:
-	@docker $(filter-out $@,$(MAKECMDGOALS))
-
-## dc	:	Shortcut for docker-compose that will map on the selected environment
-dc:
-	@docker-compose $(filter-out $@,$(MAKECMDGOALS))
+	$(docker_compose_command) pull
+	$(docker_compose_command) build
 
 ## help	:	Print commands help.
 help : Makefile
@@ -31,7 +31,7 @@ help : Makefile
 ##		logs ruby	: View `ruby` container logs.
 ##		logs nginx ruby	: View `nginx` and `ruby` containers logs.
 logs:
-	@docker-compose logs -f $(filter-out $@,$(MAKECMDGOALS))
+	$(docker_compose_command) logs -f $(filter-out $@,$(MAKECMDGOALS))
 
 ## local	:	Unset the DOCKER_ vars in the .env file
 local:
@@ -58,36 +58,55 @@ endif
 ## prune	:	Remove containers and their volumes.
 prune:
 	@echo "Removing containers for $(PROJECT_NAME)..."
-	docker-compose down -v
+	$(docker_compose_command) down -v
+	$(docker_compose_command) prune
 
 ## ps	:	List running containers.
 ps:
-	docker ps --filter name='$(PROJECT_NAME)*'
+	$(docker_compose_command) ps
+
+## push	:	Push the image to the registry
+pull:
+	$(docker_command) pull $(filter-out $@,$(MAKECMDGOALS))
+
+## push	:	Push the image to the registry
+push:
+	$(docker_command) push $(filter-out $@,$(MAKECMDGOALS))
+
+## rmi	:	Delete image
+rmi:
+	$(docker_command) rmi $(filter-out $@,$(MAKECMDGOALS))
 
 ## shell	:	Access `ruby` container via shell.
 shell:
-	docker exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_rust' --format "{{ .ID }}") /bin/bash
+	$(docker_command) exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_rust' --format "{{ .ID }}") /bin/bash
 
 ## stop	:	Stop containers.
 stop:
 	@echo "Stopping containers for $(PROJECT_NAME)..."
-	docker-compose stop
+	$(docker_compose_command) stop
+
+## tag	:	Push the image to the registry
+tag:
+	$(docker_command) tag $(filter-out $@,$(MAKECMDGOALS))
+
 
 ## up	:	Start up containers.
 up:
+	echo
 ifeq ($(DEPLOYMENT_ENVIRONMENT), Production)
 	@echo -n "\e[31mAre you sure that you want to deploy on the production environment? (Y/N)\e[0m "
 	@read confirmation; \
 	if [ $$confirmation = "y" ] || [ $$confirmation = "Y" ]; \
 	then \
 		echo "Starting up containers for $(PROJECT_NAME) in the $(DEPLOYMENT_ENVIRONMENT) environment\n"\
-		`docker-compose -f docker-compose-production.yml up -d`; \
+		`$(docker_compose_command) -f docker-compose-production.yml up -d`; \
 	else \
 		echo "Operation aborted."; \
 	fi
 else
 	@echo "Starting up containers for $(PROJECT_NAME) in the $(DEPLOYMENT_ENVIRONMENT) environment"
-	docker-compose up -d --remove-orphans
+	$(docker_compose_command) up -d --remove-orphans
 endif
 
 version:
