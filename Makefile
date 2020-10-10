@@ -2,7 +2,8 @@ include .env
 
 .PHONY: build up down stop prune ps shell logs
 
-cargo_version:=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"`
+version_in_cargo:=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"`
+version_in_package:=`sed '3q;d' frontend/package.json | awk '{print $$2}' | tr -d \",`
 
 default: up
 
@@ -90,13 +91,21 @@ else
 endif
 
 version:
-	@if [ $(API_VERSION) = $(cargo_version) ]; \
+	@if [ $(API_VERSION) = $(version_in_cargo) ]; \
 	then \
-		echo "API_VERSION="$(cargo_version);\
+		echo "API_VERSION="$(version_in_cargo);\
 	else \
-		cargo_version=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"` && sed -i "s/API_VERSION=.*/API_VERSION=$$(echo $$cargo_version)/g" .env; \
-		echo "Update the API_VERSION in the .env file according to the Cargo.toml";\
+		version_in_cargo=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"` && sed -i "s/API_VERSION=.*/API_VERSION=$$(echo $$version_in_cargo)/g" .env && \
+		echo "Update the API_VERSION in the .env file according to the Cargo.toml  ($$version_in_cargo)";\
 	fi
+	@if [ $(FRONTEND_VERSION) = $(version_in_package) ]; \
+	then \
+		echo "FRONTEND_VERSION="$(version_in_package);\
+	else \
+		version_in_package=`sed '3q;d' frontend/package.json | awk '{print $$2}' | tr -d \",` && sed -i "s/FRONTEND_VERSION=.*/FRONTEND_VERSION=$$(echo $$version_in_package)/g" .env && \
+		echo "Update the FRONTEND_VERSION in the .env file according to the package.json ($$version_in_package)";\
+	fi
+
 
 # https://stackoverflow.com/a/6273809/1826109
 %:
