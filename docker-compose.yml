@@ -9,6 +9,8 @@ services:
     container_name: "${PROJECT_NAME}_angular"
     ports:
       - 4200:80
+    environment:
+      API_URL: http://api.${PROJECT_DEV_URL}
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_angular.rule=Host(`${PROJECT_DEV_URL}`)"
       - "traefik.http.services.${PROJECT_NAME}_angular.loadbalancer.server.port=80"
@@ -23,7 +25,7 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
       ROCKET_SECRET_KEY: ${ROCKET_SECRET_KEY}
-      API_URL: http://${PROJECT_DEV_URL}
+      FRONTEND_URL: http://${PROJECT_DEV_URL}
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_rust.rule=Host(`api.${PROJECT_DEV_URL}`)"
       - "traefik.http.services.${PROJECT_NAME}_rust.loadbalancer.server.port=8000"
