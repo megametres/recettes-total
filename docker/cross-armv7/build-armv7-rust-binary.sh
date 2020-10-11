@@ -5,16 +5,13 @@ docker_tag_cross_postgres=cross-pi-postgres
 docker_tag_runner=cross-runner
 
 #Build images if required
-test=$( docker images -q ${docker_tag_cross} )
-if [[ -z "$test" ]]; then
+if [[ -z $( docker images -q ${docker_tag_cross} ) ]]; then
   docker build -t ${docker_tag_cross} .
 fi
-test=$( docker images -q ${docker_tag_cross_postgres} )
-if [[ -z "$test" ]]; then
+if [[ -z $( docker images -q ${docker_tag_cross_postgres} ) ]]; then
   docker build -t ${docker_tag_cross_postgres} . --build-arg POSTGRES=true
 fi
-test=$( docker images -q ${docker_tag_runner} )
-if [[ -z "$test" ]]; then
+if [[ -z $( docker images -q ${docker_tag_runner} ) ]]; then
   docker build . -t ${docker_tag_runner} --file Dockerfile-cross-runner
 fi
 
