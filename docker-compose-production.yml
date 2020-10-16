@@ -14,7 +14,7 @@ services:
       - "traefik.http.routers.${PROJECT_NAME}_angular_router.middlewares=${PROJECT_NAME}_angular_mw"
       - "traefik.http.routers.${PROJECT_NAME}_angular_router.rule=PathPrefix(`/`)"
       - "traefik.http.middlewares.${PROJECT_NAME}_angular_mw.redirectregex.regex=^http://${PROJECT_NAME}/(.*)"
-      - "traefik.http.middlewares.${PROJECT_NAME}_angular_mw.redirectregex.replacement=http://${PROJECT_DEV_URL}/$${1}"
+      - "traefik.http.middlewares.${PROJECT_NAME}_angular_mw.redirectregex.replacement=http://${PROJECT_BASE_URL}/$${1}"
   rust:
     image: "${PROJECT_NAME}_rust_armv7:${API_VERSION}"
     container_name: "${PROJECT_NAME}_rust_armv7"
