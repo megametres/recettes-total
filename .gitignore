@@ -1,2 +1,3 @@
+.vscode/settings.json
 .env
 docker/cross-armv7/dist
