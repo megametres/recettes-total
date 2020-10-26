@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug API",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=recipes_api",
+                    "--package=recipes_api",
+                    "--manifest-path=api/Cargo.toml"
+                ],
+                "filter": {
+                    "kind": "bin"
+                }
+            },
+            "args": []
+        }
+    ]
+}

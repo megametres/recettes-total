@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  dev:
+    build:
+      context: .
+    container_name: "dev"
+    command: tail -f /dev/null
+    volumes:
+      - ../:/home/vscode/code
+    working_dir: /home/api
+    environment:
+      API_URL: http://localhost:8000
+      DATABASE_URL: postgres://recipe_admin:nbFQm5ge4NHjeXLngGPt4B3WRiUbKTNTboFvbvHqLQCDCz6q@postgres/recipe
+      FRONTEND_URL: http://localhost:4200
+  postgres:
+    image: postgres
+    container_name: "dev_postgres"
+    environment:
+      POSTGRES_PASSWORD: nbFQm5ge4NHjeXLngGPt4B3WRiUbKTNTboFvbvHqLQCDCz6q
+      POSTGRES_USER: recipe_admin
+      POSTGRES_DB: recipe
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data/
+      - ../api/postgresql-init/:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+  adminer:
+    container_name: "dev_adminer"
+    image: adminer
+    ports:
+      - 8080:8080
+
+volumes:
+  postgres_data_dev:
