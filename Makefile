@@ -1,6 +1,6 @@
 include .env
 
-.PHONY: build up down stop prune ps shell logs
+.PHONY: build help logs local prod prune ps push push rmi shell stop tag up
 
 version_in_cargo:=`sed '3q;d' api/Cargo.toml | awk '{print $$3}' | tr -d \"`
 version_in_package:=`sed '3q;d' frontend/package.json | awk '{print $$2}' | tr -d \",`
