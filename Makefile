@@ -59,7 +59,7 @@ endif
 prune:
 	@echo "Removing containers for $(PROJECT_NAME)..."
 	$(docker_compose_command) down -v
-	$(docker_compose_command) prune
+	$(docker_command) image prune
 
 ## ps	:	List running containers.
 ps:
