@@ -10,7 +10,7 @@ services:
     ports:
       - 4200:80
     environment:
-      API_URL: http://api.${PROJECT_DEV_URL}
+      API_URL: http://api.${PROJECT_DEV_URL}/
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_angular.rule=Host(`${PROJECT_DEV_URL}`)"
       - "traefik.http.services.${PROJECT_NAME}_angular.loadbalancer.server.port=80"
@@ -60,7 +60,7 @@ services:
     container_name: "recipes_adminer"
     image: adminer
     labels:
-      - "traefik.http.routers.recipes_adminer.rule=Host(`adminer.recettes`)"
+      - "traefik.http.routers.recipes_adminer.rule=Host(`adminer.${PROJECT_DEV_URL}`)"
       - "traefik.http.services.recipes_adminer.loadbalancer.server.port=8080"
 
   portainer:
@@ -70,7 +70,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
-      - "traefik.http.routers.recipes_portainer.rule=Host(`portainer.recettes`)"
+      - "traefik.http.routers.recipes_portainer.rule=Host(`portainer.${PROJECT_DEV_URL}`)"
 
   traefik:
     image: traefik:latest

@@ -7,7 +7,7 @@ services:
     ports:
       - 4200:80
     environment:
-      API_URL: http://api.${PROJECT_BASE_URL}
+      API_URL: http://api.${PROJECT_BASE_URL}/
     labels:
       - "traefik.http.routers.${PROJECT_NAME}_angular.rule=Host(`${PROJECT_BASE_URL}`)"
       - "traefik.http.services.${PROJECT_NAME}_angular.loadbalancer.server.port=80"
